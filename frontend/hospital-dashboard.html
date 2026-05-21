@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedCore — Hệ Thống Quản Lý Bệnh Viện</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --primary: #0EA5E9;
+  --primary-dark: #0284C7;
+  --primary-light: #E0F2FE;
+  --accent: #06B6D4;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --purple: #8B5CF6;
+  --bg: #F0F6FF;
+  --surface: #FFFFFF;
+  --surface2: #F8FAFC;
+  --border: #E2E8F0;
+  --text: #0F172A;
+  --text2: #475569;
+  --text3: #94A3B8;
+  --sidebar-bg: #0B1628;
+  --sidebar-text: #94A3B8;
+  --sidebar-active: #0EA5E9;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 24px rgba(14,165,233,0.12);
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+[data-theme="dark"] {
+  --bg: #070D1A;
+  --surface: #0F1824;
+  --surface2: #162030;
+  --border: #1E2D40;
+  --text: #F1F5F9;
+  --text2: #94A3B8;
+  --text3: #475569;
+  --sidebar-bg: #050C17;
+  --primary-light: #0c2a3d;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  overflow: hidden;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* ── LOGIN ── */
+#loginScreen {
+  position: fixed; inset: 0;
+  background: linear-gradient(135deg, #0B1628 0%, #0A2540 50%, #0B1628 100%);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+}
+.login-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(14,165,233,0.2);
+  border-radius: 24px;
+  padding: 48px 40px;
+  width: 420px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 0 80px rgba(14,165,233,0.15);
+}
+.login-logo { display:flex; align-items:center; gap:12px; margin-bottom:32px; }
+.login-logo-icon {
+  width:48px; height:48px; background:linear-gradient(135deg,#0EA5E9,#06B6D4);
+  border-radius:12px; display:flex; align-items:center; justify-content:center;
+  font-size:22px;
+}
+.login-logo-text { font-size:24px; font-weight:800; color:#fff; letter-spacing:-0.5px; }
+.login-logo-text span { color:#0EA5E9; }
+.login-subtitle { font-size:13px; color:rgba(255,255,255,0.4); margin-top:2px; }
+.login-form h2 { font-size:20px; font-weight:700; color:#fff; margin-bottom:4px; }
+.login-form p { font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:28px; }
+.form-group { margin-bottom:16px; }
+.form-group label { display:block; font-size:12px; font-weight:600; color:rgba(255,255,255,0.5); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
+.form-group input, .form-group select {
+  width:100%; padding:12px 16px;
+  background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px; color:#fff; font-size:14px;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  transition: border-color 0.2s, background 0.2s;
+  outline: none;
+}
+.form-group input:focus, .form-group select:focus {
+  border-color: #0EA5E9; background: rgba(14,165,233,0.08);
+}
+.form-group select option { background:#0B1628; }
+.login-roles { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:24px; }
+.role-card {
+  padding:12px; border:1.5px solid rgba(255,255,255,0.08);
+  border-radius:10px; cursor:pointer; text-align:center;
+  transition:all 0.2s;
+}
+.role-card:hover { border-color:rgba(14,165,233,0.4); background:rgba(14,165,233,0.06); }
+.role-card.active { border-color:#0EA5E9; background:rgba(14,165,233,0.12); }
+.role-card .role-icon { font-size:20px; margin-bottom:4px; }
+.role-card .role-name { font-size:12px; font-weight:600; color:#fff; }
+.role-card .role-desc { font-size:10px; color:rgba(255,255,255,0.4); margin-top:2px; }
+.btn-login {
+  width:100%; padding:14px; background:linear-gradient(135deg,#0EA5E9,#0284C7);
+  border:none; border-radius:10px; color:#fff; font-size:15px; font-weight:700;
+  cursor:pointer; transition:all 0.2s; font-family:'Plus Jakarta Sans',sans-serif;
+  letter-spacing:0.2px;
+}
+.btn-login:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(14,165,233,0.4); }
+
+/* ── SIDEBAR ── */
+#sidebar {
+  width: 260px; min-height: 100vh;
+  background: var(--sidebar-bg);
+  display: flex; flex-direction: column;
+  position: fixed; left: 0; top: 0; bottom: 0;
+  z-index: 100;
+  border-right: 1px solid rgba(255,255,255,0.04);
+  transition: width 0.3s;
+}
+.sidebar-logo {
+  padding: 24px 20px 20px;
+  display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.logo-icon {
+  width:36px; height:36px; background:linear-gradient(135deg,#0EA5E9,#06B6D4);
+  border-radius:9px; display:flex; align-items:center; justify-content:center;
+  font-size:16px; flex-shrink:0;
+}
+.logo-text { font-size:18px; font-weight:800; color:#fff; letter-spacing:-0.5px; }
+.logo-text span { color:#0EA5E9; }
+.sidebar-user {
+  padding: 16px 20px;
+  display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  margin-bottom: 8px;
+}
+.user-avatar {
+  width:36px; height:36px; border-radius:50%;
+  background:linear-gradient(135deg,#0EA5E9,#8B5CF6);
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px; font-weight:700; color:#fff; flex-shrink:0;
+}
+.user-info .user-name { font-size:13px; font-weight:700; color:#fff; }
+.user-info .user-role { font-size:11px; color:#64748B; margin-top:1px; }
+.sidebar-section { padding: 6px 12px 4px; }
+.sidebar-section-label {
+  font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px;
+  color:#3B4F64; padding: 0 8px; margin-bottom:4px;
+}
+.nav-item {
+  display:flex; align-items:center; gap:12px;
+  padding:10px 12px; border-radius:10px; cursor:pointer;
+  color:var(--sidebar-text); font-size:13.5px; font-weight:500;
+  transition:all 0.18s; margin-bottom:2px; user-select:none;
+}
+.nav-item:hover { background:rgba(255,255,255,0.05); color:#CBD5E1; }
+.nav-item.active {
+  background:rgba(14,165,233,0.12); color:#0EA5E9;
+  box-shadow:inset 3px 0 0 #0EA5E9; font-weight:600;
+}
+.nav-item .nav-icon { font-size:17px; width:20px; text-align:center; flex-shrink:0; }
+.nav-badge {
+  margin-left:auto; background:#EF4444; color:#fff;
+  font-size:10px; font-weight:700; padding:1px 6px; border-radius:20px;
+}
+.sidebar-footer {
+  margin-top:auto; padding:16px 12px;
+  border-top:1px solid rgba(255,255,255,0.05);
+}
+.theme-toggle {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border-radius:10px; cursor:pointer;
+  color:#64748B; font-size:13px; transition:all 0.18s;
+}
+.theme-toggle:hover { background:rgba(255,255,255,0.04); color:#94A3B8; }
+.toggle-switch {
+  margin-left:auto; width:36px; height:20px; background:#1E3A5F;
+  border-radius:10px; position:relative; transition:background 0.2s;
+}
+.toggle-switch::after {
+  content:''; position:absolute; width:14px; height:14px;
+  background:#64748B; border-radius:50%; top:3px; left:3px;
+  transition:all 0.2s;
+}
+[data-theme="dark"] .toggle-switch { background:#0EA5E9; }
+[data-theme="dark"] .toggle-switch::after { left:19px; background:#fff; }
+
+/* ── MAIN ── */
+#main {
+  margin-left: 260px;
+  flex: 1;
+  min-height: 100vh;
+  overflow-y: auto;
+  transition: margin-left 0.3s;
+}
+.topbar {
+  position:sticky; top:0; z-index:50;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:0 32px;
+  height:64px; display:flex; align-items:center; gap:16px;
+  backdrop-filter:blur(12px);
+}
+.topbar-title { font-size:16px; font-weight:700; color:var(--text); }
+.topbar-sub { font-size:12px; color:var(--text3); margin-top:1px; }
+.topbar-right { margin-left:auto; display:flex; align-items:center; gap:12px; }
+.btn-icon {
+  width:36px; height:36px; border-radius:9px;
+  background:var(--surface2); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:16px; transition:all 0.15s; color:var(--text2);
+}
+.btn-icon:hover { background:var(--primary-light); color:var(--primary); border-color:var(--primary); }
+.notif-dot { position:relative; }
+.notif-dot::after {
+  content:''; position:absolute; width:7px; height:7px;
+  background:#EF4444; border-radius:50%; top:-1px; right:-1px;
+  border:2px solid var(--surface);
+}
+.page-content { padding:28px 32px; }
+
+/* ── SECTIONS ── */
+.section { display:none; }
+.section.active { display:block; }
+.section-header { display:flex; align-items:center; gap:16px; margin-bottom:24px; }
+.section-title { font-size:20px; font-weight:800; color:var(--text); }
+.section-count { font-size:12px; color:var(--text3); background:var(--surface2); border:1px solid var(--border); padding:3px 10px; border-radius:20px; }
+.btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:10px 18px; border-radius:9px; border:none;
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; font-weight:600;
+  cursor:pointer; transition:all 0.18s; text-decoration:none; white-space:nowrap;
+}
+.btn-primary { background:var(--primary); color:#fff; }
+.btn-primary:hover { background:var(--primary-dark); transform:translateY(-1px); box-shadow:0 4px 14px rgba(14,165,233,0.3); }
+.btn-outline { background:transparent; color:var(--primary); border:1.5px solid var(--primary); }
+.btn-outline:hover { background:var(--primary-light); }
+.btn-ghost { background:var(--surface2); color:var(--text2); border:1px solid var(--border); }
+.btn-ghost:hover { background:var(--border); }
+.btn-danger { background:#FEF2F2; color:#EF4444; border:1px solid #FECACA; }
+.btn-danger:hover { background:#EF4444; color:#fff; }
+.btn-success { background:#ECFDF5; color:#10B981; border:1px solid #A7F3D0; }
+.btn-success:hover { background:#10B981; color:#fff; }
+.btn-sm { padding:7px 13px; font-size:12px; border-radius:7px; }
+
+/* ── CARDS ── */
+.card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:24px;
+  box-shadow:var(--shadow); transition:all 0.2s;
+}
+.card:hover { box-shadow:var(--shadow-md); }
+.stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+.stat-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:20px 24px;
+  box-shadow:var(--shadow); position:relative; overflow:hidden;
+  transition:all 0.2s;
+}
+.stat-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
+.stat-card::before {
+  content:''; position:absolute; right:-20px; top:-20px;
+  width:80px; height:80px; border-radius:50%;
+  opacity:0.08;
+}
+.stat-card.blue::before { background:#0EA5E9; }
+.stat-card.green::before { background:#10B981; }
+.stat-card.orange::before { background:#F59E0B; }
+.stat-card.purple::before { background:#8B5CF6; }
+.stat-icon {
+  width:40px; height:40px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; margin-bottom:14px;
+}
+.stat-card.blue .stat-icon { background:#E0F2FE; }
+.stat-card.green .stat-icon { background:#D1FAE5; }
+.stat-card.orange .stat-icon { background:#FEF3C7; }
+.stat-card.purple .stat-icon { background:#EDE9FE; }
+.stat-label { font-size:12px; color:var(--text3); font-weight:500; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.3px; }
+.stat-value { font-size:26px; font-weight:800; color:var(--text); letter-spacing:-0.5px; }
+.stat-change { font-size:11px; margin-top:4px; font-weight:600; }
+.stat-change.up { color:#10B981; }
+.stat-change.dn { color:#EF4444; }
+.chart-grid { display:grid; grid-template-columns:2fr 1fr; gap:16px; margin-bottom:24px; }
+.chart-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.chart-title { font-size:14px; font-weight:700; color:var(--text); }
+
+/* ── TABLE ── */
+.table-wrap { overflow-x:auto; border-radius:var(--radius); border:1px solid var(--border); }
+table { width:100%; border-collapse:collapse; background:var(--surface); }
+thead { background:var(--surface2); }
+th { padding:12px 16px; font-size:11px; font-weight:700; color:var(--text3); text-align:left; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid var(--border); white-space:nowrap; }
+td { padding:13px 16px; font-size:13px; color:var(--text); border-bottom:1px solid var(--border); }
+tr:last-child td { border-bottom:none; }
+tbody tr { transition:background 0.15s; }
+tbody tr:hover { background:var(--surface2); }
+.badge {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600;
+}
+.badge-blue { background:#E0F2FE; color:#0284C7; }
+.badge-green { background:#D1FAE5; color:#059669; }
+.badge-yellow { background:#FEF3C7; color:#D97706; }
+.badge-red { background:#FEE2E2; color:#DC2626; }
+.badge-purple { background:#EDE9FE; color:#7C3AED; }
+.badge-gray { background:var(--surface2); color:var(--text3); border:1px solid var(--border); }
+
+/* ── SEARCH BAR ── */
+.search-bar {
+  display:flex; align-items:center; gap:12px;
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:10px; padding:10px 16px;
+  flex:1; max-width:360px;
+}
+.search-bar input {
+  background:none; border:none; outline:none;
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:13px;
+  color:var(--text); flex:1;
+}
+.search-bar input::placeholder { color:var(--text3); }
+.filter-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
+.filter-select {
+  padding:9px 14px; border-radius:9px;
+  background:var(--surface2); border:1px solid var(--border);
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:13px;
+  color:var(--text); cursor:pointer; outline:none;
+}
+
+/* ── QUEUE ── */
+.queue-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+.queue-room {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);
+}
+.queue-room-header {
+  padding:16px 20px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.queue-room-name { font-size:14px; font-weight:700; color:var(--text); }
+.queue-room-spec { font-size:11px; color:var(--text3); margin-top:2px; }
+.queue-current {
+  padding:20px; text-align:center;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,var(--primary-light),transparent);
+}
+.queue-number { font-size:48px; font-weight:800; color:var(--primary); font-family:'DM Mono',monospace; letter-spacing:-2px; }
+.queue-name-display { font-size:13px; color:var(--text2); margin-top:4px; }
+.queue-list { padding:12px; }
+.queue-item {
+  display:flex; align-items:center; gap:12px;
+  padding:10px 12px; border-radius:8px; margin-bottom:6px;
+  background:var(--surface2); border:1px solid var(--border);
+  transition:all 0.15s;
+}
+.queue-item:hover { border-color:var(--primary); }
+.queue-num { font-family:'DM Mono',monospace; font-size:14px; font-weight:700; color:var(--primary); width:32px; }
+.queue-patient { font-size:13px; font-weight:600; color:var(--text); }
+.queue-time { margin-left:auto; font-size:11px; color:var(--text3); }
+
+/* ── PRESCRIPTION ── */
+.rx-form { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.rx-meds { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:16px; }
+.rx-med-item {
+  display:flex; align-items:center; gap:12px; padding:12px;
+  background:var(--surface); border:1px solid var(--border); border-radius:9px;
+  margin-bottom:8px;
+}
+.rx-med-name { font-size:13px; font-weight:600; color:var(--text); flex:1; }
+.rx-med-qty { font-family:'DM Mono',monospace; font-size:13px; color:var(--primary); font-weight:700; }
+.rx-total {
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  border-radius:12px; padding:20px; color:#fff; text-align:center;
+}
+.rx-total-label { font-size:12px; opacity:0.8; margin-bottom:4px; }
+.rx-total-amount { font-size:32px; font-weight:800; font-family:'DM Mono',monospace; letter-spacing:-1px; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.5);
+  z-index:200; display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity 0.2s;
+  backdrop-filter:blur(4px);
+}
+.modal-overlay.open { opacity:1; pointer-events:all; }
+.modal {
+  background:var(--surface); border-radius:20px; padding:32px;
+  width:520px; max-width:90vw; max-height:85vh; overflow-y:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,0.2);
+  transform:translateY(20px); transition:transform 0.2s;
+  border:1px solid var(--border);
+}
+.modal-overlay.open .modal { transform:translateY(0); }
+.modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+.modal-title { font-size:18px; font-weight:800; color:var(--text); }
+.modal-close { cursor:pointer; font-size:20px; color:var(--text3); padding:4px 8px; border-radius:6px; }
+.modal-close:hover { background:var(--surface2); color:var(--text); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-field { margin-bottom:16px; }
+.form-field label { display:block; font-size:12px; font-weight:600; color:var(--text2); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.3px; }
+.form-field input, .form-field select, .form-field textarea {
+  width:100%; padding:10px 14px; border-radius:8px;
+  border:1.5px solid var(--border); background:var(--surface2);
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; color:var(--text);
+  outline:none; transition:border-color 0.2s;
+}
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color:var(--primary); }
+.form-field textarea { resize:vertical; min-height:80px; }
+
+/* ── INVENTORY ── */
+.inv-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+.inv-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:20px; box-shadow:var(--shadow);
+  position:relative; overflow:hidden;
+}
+.inv-card .inv-name { font-size:14px; font-weight:700; color:var(--text); margin-bottom:4px; }
+.inv-card .inv-cat { font-size:11px; color:var(--text3); margin-bottom:16px; }
+.inv-bar-label { display:flex; justify-content:space-between; font-size:11px; color:var(--text3); margin-bottom:6px; }
+.inv-bar { height:6px; background:var(--surface2); border-radius:3px; overflow:hidden; }
+.inv-bar-fill { height:100%; border-radius:3px; transition:width 0.5s; }
+.inv-bar-fill.ok { background:linear-gradient(90deg,#10B981,#059669); }
+.inv-bar-fill.warn { background:linear-gradient(90deg,#F59E0B,#D97706); }
+.inv-bar-fill.low { background:linear-gradient(90deg,#EF4444,#DC2626); }
+.inv-price { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; color:var(--primary); margin-top:12px; }
+.inv-exp { font-size:11px; color:var(--text3); margin-top:2px; }
+
+/* ── REALTIME TICKER ── */
+.queue-ticker {
+  background:var(--sidebar-bg); color:#fff;
+  padding:10px 24px; display:flex; align-items:center; gap:20px;
+  font-size:13px; overflow:hidden; border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.ticker-label { background:var(--primary); padding:3px 10px; border-radius:4px; font-size:11px; font-weight:700; flex-shrink:0; }
+.ticker-track { display:flex; gap:32px; animation:ticker 20s linear infinite; }
+@keyframes ticker {
+  from { transform:translateX(0); }
+  to { transform:translateX(-50%); }
+}
+
+/* ── PATIENT PROFILE ── */
+.patient-hero {
+  background:linear-gradient(135deg,var(--primary) 0%,var(--accent) 100%);
+  border-radius:var(--radius); padding:28px; color:#fff; margin-bottom:20px;
+  display:flex; align-items:center; gap:24px;
+}
+.patient-avatar-big {
+  width:72px; height:72px; border-radius:18px; background:rgba(255,255,255,0.2);
+  display:flex; align-items:center; justify-content:center; font-size:28px; flex-shrink:0;
+}
+.patient-hero-info h2 { font-size:22px; font-weight:800; letter-spacing:-0.5px; }
+.patient-hero-info p { font-size:13px; opacity:0.8; margin-top:4px; }
+.patient-hero-stats { margin-left:auto; display:flex; gap:24px; }
+.phero-stat { text-align:center; }
+.phero-stat .val { font-size:18px; font-weight:800; font-family:'DM Mono',monospace; }
+.phero-stat .lbl { font-size:11px; opacity:0.7; margin-top:2px; }
+.timeline { position:relative; padding-left:24px; }
+.timeline::before { content:''; position:absolute; left:7px; top:0; bottom:0; width:2px; background:var(--border); }
+.tl-item { position:relative; margin-bottom:20px; }
+.tl-item::before { content:''; position:absolute; left:-20px; top:4px; width:10px; height:10px; border-radius:50%; background:var(--primary); border:2px solid var(--surface); }
+.tl-date { font-size:11px; color:var(--text3); margin-bottom:4px; }
+.tl-content { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
+.tl-content .tl-title { font-size:13px; font-weight:700; color:var(--text); margin-bottom:4px; }
+.tl-content .tl-body { font-size:12px; color:var(--text2); }
+
+/* ── MISC ── */
+.empty-state { text-align:center; padding:60px 20px; color:var(--text3); }
+.empty-state .empty-icon { font-size:48px; margin-bottom:12px; }
+.empty-state p { font-size:14px; }
+.avatar-sm { width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,#0EA5E9,#8B5CF6); display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; }
+
+@media(max-width:1100px) {
+  .stat-grid { grid-template-columns:1fr 1fr; }
+  .chart-grid { grid-template-columns:1fr; }
+  .queue-grid { grid-template-columns:1fr 1fr; }
+  .inv-grid { grid-template-columns:1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">🏥</div>
+      <div>
+        <div class="login-logo-text">Med<span>Core</span></div>
+        <div class="login-subtitle">Hệ thống quản lý bệnh viện</div>
+      </div>
+    </div>
+    <div class="login-form">
+      <h2>Đăng nhập hệ thống</h2>
+      <p>Chọn vai trò và nhập thông tin xác thực</p>
+      <div style="margin-bottom:20px">
+        <div class="form-group"><label>Số điện thoại / Email</label><input type="text" placeholder="admin@benhvien.vn" id="loginUser" value="admin@benhvien.vn"></div>
+        <div class="form-group"><label>Mật khẩu</label><input type="password" placeholder="••••••••" id="loginPass" value="123456"></div>
+      </div>
+      <p style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Chọn vai trò</p>
+      <div class="login-roles">
+        <div class="role-card active" onclick="selectRole(this,'Admin')">
+          <div class="role-icon">👑</div>
+          <div class="role-name">Ban Giám Đốc</div>
+          <div class="role-desc">Toàn quyền hệ thống</div>
+        </div>
+        <div class="role-card" onclick="selectRole(this,'Bác sĩ')">
+          <div class="role-icon">🩺</div>
+          <div class="role-name">Bác Sĩ</div>
+          <div class="role-desc">Khám & kê đơn thuốc</div>
+        </div>
+        <div class="role-card" onclick="selectRole(this,'Điều dưỡng')">
+          <div class="role-icon">💊</div>
+          <div class="role-name">Điều Dưỡng</div>
+          <div class="role-desc">Chăm sóc bệnh nhân</div>
+        </div>
+        <div class="role-card" onclick="selectRole(this,'Tiếp đón')">
+          <div class="role-icon">🖥️</div>
+          <div class="role-name">Tiếp Đón</div>
+          <div class="role-desc">Quản lý hàng đợi</div>
+        </div>
+      </div>
+      <button class="btn-login" onclick="doLogin()">🔐 Đăng nhập vào hệ thống</button>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🏥</div>
+    <div class="logo-text">Med<span>Core</span></div>
+  </div>
+  <div class="sidebar-user">
+    <div class="user-avatar" id="sidebarAvatar">A</div>
+    <div class="user-info">
+      <div class="user-name" id="sidebarName">Admin</div>
+      <div class="user-role" id="sidebarRole">Ban Giám Đốc</div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Tổng quan</div>
+    <div class="nav-item active" onclick="nav('dashboard',this)">
+      <span class="nav-icon">📊</span> Dashboard
+    </div>
+  </div>
+
+  <div class="sidebar-section" style="margin-top:8px">
+    <div class="sidebar-section-label">Quản lý</div>
+    <div class="nav-item" onclick="nav('patients',this)">
+      <span class="nav-icon">🧑‍⚕️</span> Bệnh nhân 12314
+      <span class="nav-badge">248</span>
+    </div>
+    <div class="nav-item" onclick="nav('doctors',this)">
+      <span class="nav-icon">👨‍⚕️</span> Bác sĩ & Nhân viên
+    </div>
+    <div class="nav-item" onclick="nav('queue',this)">
+      <span class="nav-icon">🔢</span> Hàng đợi khám
+      <span class="nav-badge">12</span>
+    </div>
+    <div class="nav-item" onclick="nav('prescriptions',this)">
+      <span class="nav-icon">📋</span> Kê đơn thuốc
+    </div>
+    <div class="nav-item" onclick="nav('inventory',this)">
+      <span class="nav-icon">💊</span> Kho dược phẩm
+    </div>
+  </div>
+
+  <div class="sidebar-section" style="margin-top:8px">
+    <div class="sidebar-section-label">Báo cáo</div>
+    <div class="nav-item" onclick="nav('reports',this)">
+      <span class="nav-icon">📈</span> Thống kê & Báo cáo
+    </div>
+    <div class="nav-item" onclick="nav('settings',this)">
+      <span class="nav-icon">⚙️</span> Cài đặt hệ thống
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="theme-toggle" onclick="toggleTheme()">
+      <span>🌙</span> Chế độ tối
+      <div class="toggle-switch"></div>
+    </div>
+    <div class="nav-item" onclick="logout()" style="margin-top:4px;color:#EF4444">
+      <span class="nav-icon">🚪</span> Đăng xuất
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- Ticker -->
+  <div class="queue-ticker">
+    <span class="ticker-label">🔴 LIVE</span>
+    <div class="ticker-track" id="tickerTrack">
+      <span>🏥 Phòng Tim Mạch — Đang gọi: <strong>STT 042 - Nguyễn Văn An</strong></span>
+      <span>🦴 Phòng Cơ Xương Khớp — Đang gọi: <strong>STT 017 - Trần Thị Bích</strong></span>
+      <span>🧠 Phòng Thần Kinh — Đang gọi: <strong>STT 029 - Lê Minh Tuấn</strong></span>
+      <span>👁️ Phòng Mắt — Đang gọi: <strong>STT 008 - Phạm Thị Lan</strong></span>
+      <span>🦷 Phòng Nha Khoa — Đang gọi: <strong>STT 031 - Hoàng Văn Đức</strong></span>
+      <span>🏥 Phòng Tim Mạch — Đang gọi: <strong>STT 042 - Nguyễn Văn An</strong></span>
+      <span>🦴 Phòng Cơ Xương Khớp — Đang gọi: <strong>STT 017 - Trần Thị Bích</strong></span>
+      <span>🧠 Phòng Thần Kinh — Đang gọi: <strong>STT 029 - Lê Minh Tuấn</strong></span>
+      <span>👁️ Phòng Mắt — Đang gọi: <strong>STT 008 - Phạm Thị Lan</strong></span>
+      <span>🦷 Phòng Nha Khoa — Đang gọi: <strong>STT 031 - Hoàng Văn Đức</strong></span>
+    </div>
+  </div>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="topbarTitle">Dashboard Tổng Quan</div>
+      <div class="topbar-sub" id="topbarSub">Thứ Bảy, 16/05/2026 — Ca sáng đang hoạt động</div>
+    </div>
+    <div class="topbar-right">
+      <div class="btn-icon notif-dot" title="Thông báo">🔔</div>
+      <div class="btn-icon" title="Tìm kiếm nhanh" onclick="document.getElementById('globalSearch').focus()">🔍</div>
+      <div class="btn-icon" title="Xuất báo cáo" onclick="exportPDF()">📥</div>
+    </div>
+  </div>
+
+  <!-- CONTENT chinh -->
+  <div class="page-content">
+
+    <!-- DASHBOARD -->
+    <div id="sec-dashboard" class="section active">
+      <div class="stat-grid">
+        <div class="stat-card blue">
+          <div class="stat-icon">🧑‍⚕️</div>
+          <div class="stat-label">Bệnh nhân hôm nay</div>
+          <div class="stat-value">248</div>
+          <div class="stat-change up">↑ 12% so với hôm qua</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon">✅</div>
+          <div class="stat-label">Ca đã hoàn thành</div>
+          <div class="stat-value">186</div>
+          <div class="stat-change up">↑ 75% hoàn thành</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-icon">💰</div>
+          <div class="stat-label">Doanh thu hôm nay</div>
+          <div class="stat-value">84.2M</div>
+          <div class="stat-change up">↑ 8% so với hôm qua</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-icon">🔢</div>
+          <div class="stat-label">Đang chờ khám</div>
+          <div class="stat-value">62</div>
+          <div class="stat-change dn">↓ Giảm 5 trong 30 phút</div>
+        </div>
+      </div>
+
+      <div class="chart-grid">
+        <div class="card">
+          <div class="chart-header">
+            <div class="chart-title">📈 Lượt khám theo ngày (7 ngày)</div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost btn-sm">Tuần</button>
+              <button class="btn btn-primary btn-sm">Tháng</button>
+            </div>
+          </div>
+          <canvas id="chartWeek" height="200"></canvas>
+        </div>
+        <div class="card">
+          <div class="chart-header"><div class="chart-title">🏥 Phân bố chuyên khoa</div></div>
+          <canvas id="chartSpec" height="220"></canvas>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="card">
+          <div class="chart-header">
+            <div class="chart-title">💊 Top thuốc tiêu thụ</div>
+          </div>
+          <canvas id="chartMeds" height="180"></canvas>
+        </div>
+        <div class="card">
+          <div class="chart-header">
+            <div class="chart-title">🕐 Bệnh nhân chờ gần đây</div>
+            <button class="btn btn-outline btn-sm" onclick="nav('queue',document.querySelector('[onclick*=queue]'))">Xem hàng đợi</button>
+          </div>
+          <table style="width:100%">
+            <thead><tr><th>STT</th><th>Bệnh nhân</th><th>Chuyên khoa</th><th>Chờ</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge badge-blue">042</span></td><td>Nguyễn Văn An</td><td>Tim Mạch</td><td><span class="badge badge-yellow">32p</span></td></tr>
+              <tr><td><span class="badge badge-blue">043</span></td><td>Trần Thị Bình</td><td>Nội Khoa</td><td><span class="badge badge-yellow">28p</span></td></tr>
+              <tr><td><span class="badge badge-blue">044</span></td><td>Lê Văn Cường</td><td>Ngoại Khoa</td><td><span class="badge badge-green">12p</span></td></tr>
+              <tr><td><span class="badge badge-blue">045</span></td><td>Phạm Thị Dung</td><td>Mắt</td><td><span class="badge badge-green">8p</span></td></tr>
+              <tr><td><span class="badge badge-blue">046</span></td><td>Hoàng Minh Đức</td><td>Nha Khoa</td><td><span class="badge badge-green">5p</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PATIENTS Tab BỆNH NHÂN -->
+    <div id="sec-patients" class="section">
+      <div class="section-header">
+        <div class="section-title">🧑‍⚕️ Danh sách Bệnh nhân</div>
+        <div class="section-count">248 bệnh nhân</div>
+        <div style="margin-left:auto;display:flex;gap:10px">
+          <button class="btn btn-outline" onclick="exportPDF()">📥 Xuất Excel</button>
+          <button class="btn btn-primary" onclick="openModal('addPatient')">+ Thêm bệnh nhân</button>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <div class="search-bar">
+          <span>🔍</span>
+          <input type="text" id="globalSearch" placeholder="Tìm theo tên, mã BN, CCCD..." oninput="filterTable(this,'patientTable')">
+        </div>
+        <select class="filter-select" onchange="filterTableByCol(this,'patientTable',3)">
+          <option value="">Tất cả chuyên khoa</option>
+          <option>Tim Mạch</option>
+          <option>Nội Khoa</option>
+          <option>Ngoại Khoa</option>
+          <option>Mắt</option>
+          <option>Nha Khoa</option>
+          <option>Thần Kinh</option>
+          <option>Cơ Xương Khớp</option>
+        </select>
+        <select class="filter-select" onchange="filterTableByCol(this,'patientTable',5)">
+          <option value="">Tất cả trạng thái</option>
+          <option>Đang chờ</option>
+          <option>Đang khám</option>
+          <option>Hoàn thành</option>
+          <option>Nhập viện</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table id="patientTable">
+          <thead>
+            <tr><th>Mã BN</th><th>Họ & Tên</th><th>Ngày sinh</th><th>Chuyên khoa</th><th>Bác sĩ</th><th>Trạng thái</th><th>Thao tác</th></tr>
+          </thead>
+          <tbody id="patientTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- DOCTORS -->
+    <div id="sec-doctors" class="section">
+      <div class="section-header">
+        <div class="section-title">👨‍⚕️ Danh sách Bác sĩ & Nhân viên</div>
+        <div style="margin-left:auto;display:flex;gap:10px">
+          <select class="filter-select" onchange="filterDocBySpec(this.value)">
+            <option value="">Tất cả chuyên khoa</option>
+            <option>Tim Mạch</option><option>Nội Khoa</option><option>Ngoại Khoa</option>
+            <option>Mắt</option><option>Nha Khoa</option><option>Thần Kinh</option>
+          </select>
+          <button class="btn btn-primary" onclick="openModal('addDoctor')">+ Thêm bác sĩ</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="doctorTable">
+          <thead><tr><th>Mã BS</th><th>Họ & Tên</th><th>Chuyên khoa</th><th>Học hàm</th><th>Ca trực</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+          <tbody id="doctorTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- QUEUE -->
+    <div id="sec-queue" class="section">
+      <div class="section-header">
+        <div class="section-title">🔢 Quản lý Hàng đợi Khám</div>
+        <div style="margin-left:auto;display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="openModal('addQueue')">+ Tiếp nhận bệnh nhân</button>
+        </div>
+      </div>
+      <div class="queue-grid" id="queueGrid"></div>
+    </div>
+
+    <!-- PRESCRIPTIONS -->
+    <div id="sec-prescriptions" class="section">
+      <div class="section-header">
+        <div class="section-title">📋 Kê Đơn Thuốc Điện Tử</div>
+        <div style="margin-left:auto;display:flex;gap:10px">
+          <button class="btn btn-outline" onclick="exportPDF()">🖨️ In đơn thuốc</button>
+          <button class="btn btn-primary" onclick="openModal('addRx')">+ Tạo đơn mới</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 380px;gap:20px">
+        <div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Mã đơn</th><th>Bệnh nhân</th><th>Bác sĩ</th><th>Ngày kê</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr></thead>
+              <tbody id="rxTbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chart-title" style="margin-bottom:16px">💊 Đơn đang tạo</div>
+          <div class="form-field">
+            <label>Bệnh nhân</label>
+            <select class="form-field select"><option>Nguyễn Văn An - BN001</option><option>Trần Thị Bình - BN002</option></select>
+          </div>
+          <div class="form-field">
+            <label>Chẩn đoán</label>
+            <input type="text" placeholder="Nhập chẩn đoán..." style="width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);font-family:inherit;color:var(--text);outline:none">
+          </div>
+          <div class="rx-meds" id="rxMeds">
+            <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">Danh sách thuốc</div>
+            <div class="rx-med-item"><span class="rx-med-name">Amoxicillin 500mg</span><span class="rx-med-qty">x 30 viên</span><button class="btn btn-danger btn-sm" onclick="this.parentElement.remove();calcRx()">✕</button></div>
+            <div class="rx-med-item"><span class="rx-med-name">Paracetamol 500mg</span><span class="rx-med-qty">x 20 viên</span><button class="btn btn-danger btn-sm" onclick="this.parentElement.remove();calcRx()">✕</button></div>
+            <div class="rx-med-item"><span class="rx-med-name">Vitamin C 1000mg</span><span class="rx-med-qty">x 15 viên</span><button class="btn btn-danger btn-sm" onclick="this.parentElement.remove();calcRx()">✕</button></div>
+          </div>
+          <button class="btn btn-ghost" style="width:100%;margin-top:10px;margin-bottom:16px" onclick="addMedToRx()">+ Thêm thuốc</button>
+          <div class="rx-total">
+            <div class="rx-total-label">Tổng tiền đơn thuốc</div>
+            <div class="rx-total-amount" id="rxTotal">285.000đ</div>
+          </div>
+          <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="saveRx()">💾 Lưu & In đơn thuốc</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div id="sec-inventory" class="section">
+      <div class="section-header">
+        <div class="section-title">💊 Kho Dược Phẩm & Vật Tư</div>
+        <div style="margin-left:auto;display:flex;gap:10px">
+          <button class="btn btn-outline" onclick="exportPDF()">📊 Báo cáo kho</button>
+          <button class="btn btn-primary" onclick="openModal('addInv')">+ Nhập hàng</button>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <div class="search-bar">
+          <span>🔍</span>
+          <input type="text" placeholder="Tìm tên thuốc, mã hàng..." oninput="filterInv(this.value)">
+        </div>
+        <select class="filter-select" onchange="filterInvCat(this.value)">
+          <option value="">Tất cả danh mục</option>
+          <option>Kháng sinh</option><option>Giảm đau</option><option>Tim mạch</option>
+          <option>Vitamin</option><option>Vật tư y tế</option>
+        </select>
+        <select class="filter-select">
+          <option>Tất cả trạng thái</option>
+          <option>Còn hàng</option><option>Sắp hết</option><option>Hết hàng</option>
+        </select>
+      </div>
+      <div class="inv-grid" id="invGrid"></div>
+    </div>
+
+    <!-- REPORTS -->
+    <div id="sec-reports" class="section">
+      <div class="section-header">
+        <div class="section-title">📈 Thống kê & Báo cáo</div>
+        <div style="margin-left:auto;display:flex;gap:10px">
+          <select class="filter-select"><option>Tháng 5/2026</option><option>Tháng 4/2026</option><option>Q1/2026</option></select>
+          <button class="btn btn-primary" onclick="exportPDF()">📥 Xuất PDF</button>
+        </div>
+      </div>
+      <div class="stat-grid" style="margin-bottom:20px">
+        <div class="stat-card blue"><div class="stat-icon">👥</div><div class="stat-label">Tổng bệnh nhân tháng</div><div class="stat-value">1,842</div><div class="stat-change up">↑ 18% so với tháng trước</div></div>
+        <div class="stat-card green"><div class="stat-icon">💰</div><div class="stat-label">Doanh thu tháng</div><div class="stat-value">2.4 Tỷ</div><div class="stat-change up">↑ 24% so với tháng trước</div></div>
+        <div class="stat-card orange"><div class="stat-icon">💊</div><div class="stat-label">Đơn thuốc đã kê</div><div class="stat-value">1,284</div><div class="stat-change up">↑ 9% so với tháng trước</div></div>
+        <div class="stat-card purple"><div class="stat-icon">⭐</div><div class="stat-label">Mức độ hài lòng</div><div class="stat-value">4.8/5</div><div class="stat-change up">↑ 0.2 điểm</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="card">
+          <div class="chart-header"><div class="chart-title">📊 Doanh thu theo tháng</div></div>
+          <canvas id="chartRevenue" height="220"></canvas>
+        </div>
+        <div class="card">
+          <div class="chart-header"><div class="chart-title">👥 Xu hướng bệnh nhân</div></div>
+          <canvas id="chartPatientTrend" height="220"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="sec-settings" class="section">
+      <div class="section-header"><div class="section-title">⚙️ Cài đặt Hệ thống</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="card">
+          <div class="chart-title" style="margin-bottom:20px">🏥 Thông tin Bệnh viện</div>
+          <div class="form-field"><label>Tên bệnh viện</label><input type="text" value="Bệnh Viện Đa Khoa Phúc Yên"></div>
+          <div class="form-field"><label>Địa chỉ</label><input type="text" value="123 Đường Ngô Gia Tự, Phúc Yên, Vĩnh Phúc"></div>
+          <div class="form-field"><label>Điện thoại</label><input type="text" value="0211 3868 xxx"></div>
+          <div class="form-field"><label>Email</label><input type="text" value="info@bvphucyen.vn"></div>
+          <button class="btn btn-primary">💾 Lưu thay đổi</button>
+        </div>
+        <div class="card">
+          <div class="chart-title" style="margin-bottom:20px">🔐 Bảo mật & Phân quyền</div>
+          <div class="form-field"><label>Thời gian tự đăng xuất</label>
+            <select style="width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit;outline:none">
+              <option>30 phút</option><option>1 giờ</option><option>2 giờ</option><option>8 giờ</option>
+            </select>
+          </div>
+          <div class="form-field"><label>Yêu cầu 2FA</label>
+            <select style="width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit;outline:none">
+              <option>Bật cho Admin</option><option>Bật cho tất cả</option><option>Tắt</option>
+            </select>
+          </div>
+          <div class="form-field"><label>Mức độ log</label>
+            <select style="width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit;outline:none">
+              <option>Chi tiết</option><option>Cơ bản</option><option>Lỗi only</option>
+            </select>
+          </div>
+          <button class="btn btn-primary">💾 Lưu cài đặt</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page-content -->
+</div><!-- /main -->
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Modal</div>
+      <div class="modal-close" onclick="closeModal()">✕</div>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+const patients = [
+  {id:'BN001',name:'Nguyễn Văn An',dob:'12/03/1985',spec:'Tim Mạch',doctor:'BS. Trần Quốc Hùng',status:'Đang khám'},
+  {id:'BN002',name:'Trần Thị Bình',dob:'08/07/1972',spec:'Nội Khoa',doctor:'BS. Lê Thị Mai',status:'Đang chờ'},
+  {id:'BN003',name:'Lê Văn Cường',dob:'25/11/1990',spec:'Ngoại Khoa',doctor:'BS. Nguyễn Đức Anh',status:'Hoàn thành'},
+  {id:'BN004',name:'Phạm Thị Dung',dob:'14/02/1968',spec:'Mắt',doctor:'BS. Hoàng Văn Bình',status:'Đang chờ'},
+  {id:'BN005',name:'Hoàng Minh Đức',dob:'30/09/1995',spec:'Nha Khoa',doctor:'BS. Phạm Thị Thu',status:'Hoàn thành'},
+  {id:'BN006',name:'Vũ Thị Hoa',dob:'22/04/1980',spec:'Thần Kinh',doctor:'BS. Cao Văn Lâm',status:'Nhập viện'},
+  {id:'BN007',name:'Đặng Văn Kiên',dob:'17/08/1963',spec:'Tim Mạch',doctor:'BS. Trần Quốc Hùng',status:'Đang chờ'},
+  {id:'BN008',name:'Bùi Thị Lan',dob:'05/01/1988',spec:'Nội Khoa',doctor:'BS. Lê Thị Mai',status:'Đang khám'},
+  {id:'BN009',name:'Trịnh Văn Nam',dob:'19/06/1975',spec:'Cơ Xương Khớp',doctor:'BS. Nguyễn Đức Anh',status:'Đang chờ'},
+  {id:'BN010',name:'Ngô Thị Oanh',dob:'11/12/1992',spec:'Ngoại Khoa',doctor:'BS. Hoàng Văn Bình',status:'Hoàn thành'},
+];
+
+const doctors = [
+  {id:'BS001',name:'Trần Quốc Hùng',spec:'Tim Mạch',degree:'PGS.TS.BS',shift:'Ca sáng',status:'Đang khám'},
+  {id:'BS002',name:'Lê Thị Mai',spec:'Nội Khoa',degree:'TS.BS',shift:'Ca sáng',status:'Sẵn sàng'},
+  {id:'BS003',name:'Nguyễn Đức Anh',spec:'Ngoại Khoa',degree:'BSCKII',shift:'Ca chiều',status:'Nghỉ'},
+  {id:'BS004',name:'Hoàng Văn Bình',spec:'Mắt',degree:'BSCKI',shift:'Ca sáng',status:'Sẵn sàng'},
+  {id:'BS005',name:'Phạm Thị Thu',spec:'Nha Khoa',degree:'ThS.BS',shift:'Ca chiều',status:'Đang khám'},
+  {id:'BS006',name:'Cao Văn Lâm',spec:'Thần Kinh',degree:'GS.TS.BS',shift:'Ca trực',status:'Sẵn sàng'},
+];
+// data room = [{id, room name, ma benh nhan, ten benh nhan, trang thai}]
+
+// data queue = [{ma benh nhan, ten benh nhan,}]
+const queueData = [
+  {room:'Phòng Tim Mạch',spec:'Tim Mạch',current:'042',currentName:'Nguyễn Văn An',waiting:[{n:'043',name:'Lê Quang Hải',t:'28p'},{n:'044',name:'Bùi Thị Kim',t:'35p'},{n:'045',name:'Đỗ Văn Long',t:'42p'}]},
+  {room:'Phòng Nội Khoa',spec:'Nội Khoa',current:'017',currentName:'Trần Thị Bình',waiting:[{n:'018',name:'Vũ Minh Phúc',t:'15p'},{n:'019',name:'Ngô Thị Quỳnh',t:'22p'}]},
+  {room:'Phòng Ngoại Khoa',spec:'Ngoại Khoa',current:'029',currentName:'Hoàng Văn Sơn',waiting:[{n:'030',name:'Trịnh Thị Tâm',t:'10p'},{n:'031',name:'Đinh Văn Uy',t:'17p'},{n:'032',name:'Lương Thị Vân',t:'25p'}]},
+  {room:'Phòng Mắt',spec:'Mắt',current:'008',currentName:'Phạm Thị Lan',waiting:[{n:'009',name:'Cao Văn Xuân',t:'12p'}]},
+  {room:'Phòng Nha Khoa',spec:'Nha Khoa',current:'031',currentName:'Hoàng Văn Yên',waiting:[{n:'032',name:'Đặng Thị Yến',t:'8p'},{n:'033',name:'Bùi Văn Zung',t:'16p'}]},
+  {room:'Phòng Thần Kinh',spec:'Thần Kinh',current:'021',currentName:'Nguyễn Thị Ánh',waiting:[{n:'022',name:'Trần Văn Bảo',t:'20p'},{n:'023',name:'Lê Thị Cam',t:'28p'},{n:'024',name:'Phạm Văn Dũng',t:'36p'}]},
+];
+
+
+
+const inventory = [
+  {name:'Amoxicillin 500mg',cat:'Kháng sinh',qty:850,max:1000,exp:'12/2026',price:'2.500đ'},
+  {name:'Paracetamol 500mg',cat:'Giảm đau',qty:1200,max:2000,exp:'06/2027',price:'800đ'},
+  {name:'Metformin 500mg',cat:'Tim mạch',qty:240,max:500,exp:'03/2027',price:'3.200đ'},
+  {name:'Omeprazole 20mg',cat:'Dạ dày',qty:80,max:400,exp:'09/2026',price:'4.500đ'},
+  {name:'Vitamin C 1000mg',cat:'Vitamin',qty:600,max:800,exp:'08/2027',price:'1.200đ'},
+  {name:'Amlodipine 5mg',cat:'Tim mạch',qty:30,max:300,exp:'11/2026',price:'5.800đ'},
+  {name:'Găng tay y tế L',cat:'Vật tư y tế',qty:2000,max:5000,exp:'—',price:'1.500đ'},
+  {name:'Khẩu trang N95',cat:'Vật tư y tế',qty:150,max:1000,exp:'—',price:'25.000đ'},
+  {name:'Bông gòn y tế',cat:'Vật tư y tế',qty:450,max:600,exp:'—',price:'12.000đ'},
+];
+
+const rxData = [
+  {id:'RX2024001',patient:'Nguyễn Văn An',doctor:'BS. Trần Quốc Hùng',date:'16/05/2026',total:'285.000đ',status:'Đã cấp phát'},
+  {id:'RX2024002',patient:'Trần Thị Bình',doctor:'BS. Lê Thị Mai',date:'16/05/2026',total:'164.000đ',status:'Chờ duyệt'},
+  {id:'RX2024003',patient:'Phạm Thị Dung',doctor:'BS. Hoàng Văn Bình',date:'15/05/2026',total:'520.000đ',status:'Đã cấp phát'},
+  {id:'RX2024004',patient:'Vũ Thị Hoa',doctor:'BS. Cao Văn Lâm',date:'15/05/2026',total:'890.000đ',status:'Đang pha chế'},
+];
+
+// ── LOGIN ──
+let currentRole = 'Admin';
+function selectRole(el, role) {
+  document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active'); currentRole = role;
+}
+function doLogin() {
+  const av = {'Admin':'AD','Bác sĩ':'BS','Điều dưỡng':'ĐD','Tiếp đón':'TĐ'}[currentRole]||'U';
+  const names = {'Admin':'Nguyễn Văn Admin','Bác sĩ':'BS. Trần Quốc Hùng','Điều dưỡng':'ĐD. Lê Thị Mai','Tiếp đón':'NV. Phạm Văn Tiếp'};
+  document.getElementById('sidebarAvatar').textContent = av;
+  document.getElementById('sidebarName').textContent = names[currentRole];
+  document.getElementById('sidebarRole').textContent = currentRole;
+  document.getElementById('loginScreen').style.display = 'none';
+  initAll();
+}
+function logout() {
+  if(confirm('Xác nhận đăng xuất?')) {
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+}
+
+// ── NAVIGATION ── nav này là lấy trong tag div có id="sec-*" và trong class thêm active
+// 
+
+function nav(section, el) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+section).classList.add('active');
+  if(el) el.classList.add('active');
+  const titles = {dashboard:'Dashboard Tổng Quan',patients:'Danh sách Bệnh nhân',doctors:'Bác sĩ & Nhân viên',queue:'Hàng đợi Khám',prescriptions:'Kê đơn Thuốc điện tử',inventory:'Kho Dược phẩm',reports:'Thống kê & Báo cáo',settings:'Cài đặt Hệ thống'};
+  document.getElementById('topbarTitle').textContent = titles[section]||section;
+  if(section==='reports') { setTimeout(initReportCharts,100); }
+}
+
+// ── THEME ──
+function toggleTheme() {
+  const h = document.documentElement;
+  h.setAttribute('data-theme', h.getAttribute('data-theme')==='dark'?'light':'dark');
+  updateChartColors();
+}
+
+// ── TABLE RENDER ──
+function renderPatients() {
+  const tb = document.getElementById('patientTbody');
+  const statusMap = {'Đang chờ':'badge-yellow','Đang khám':'badge-blue','Hoàn thành':'badge-green','Nhập viện':'badge-purple'};
+  tb.innerHTML = patients.map(p=>`
+    <tr>
+      <td><span class="badge badge-gray" style="font-family:'DM Mono',monospace">${p.id}</span></td>
+      <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar-sm">${p.name[0]}</div>${p.name}</div></td>
+      <td>${p.dob}</td>
+      <td><span class="badge badge-blue">${p.spec}</span></td>
+      <td style="color:var(--text2)">${p.doctor}</td>
+      <td><span class="badge ${statusMap[p.status]||'badge-gray'}">${p.status}</span></td>
+      <td><div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="viewPatient('${p.id}')">👁 Xem</button>
+        <button class="btn btn-outline btn-sm">✏️ Sửa</button>
+        <button class="btn btn-danger btn-sm" onclick="delPatient('${p.id}')">🗑</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function renderDoctors(list) {
+  list = list||doctors;
+  const sm = {'Đang khám':'badge-blue','Sẵn sàng':'badge-green','Nghỉ':'badge-gray'};
+  document.getElementById('doctorTbody').innerHTML = list.map(d=>`
+    <tr>
+      <td><span class="badge badge-gray" style="font-family:'DM Mono',monospace">${d.id}</span></td>
+      <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar-sm">${d.name[0]}</div>${d.name}</div></td>
+      <td><span class="badge badge-blue">${d.spec}</span></td>
+      <td><span class="badge badge-purple">${d.degree}</span></td>
+      <td>${d.shift}</td>
+      <td><span class="badge ${sm[d.status]||'badge-gray'}">${d.status}</span></td>
+      <td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm">📅 Lịch trực</button><button class="btn btn-outline btn-sm">✏️ Sửa</button></div></td>
+    </tr>`).join('');
+}
+
+function renderQueue() {
+  document.getElementById('queueGrid').innerHTML = queueData.map(q=>`
+    <div class="queue-room">
+      <div class="queue-room-header">
+        <div><div class="queue-room-name">${q.room}</div><div class="queue-room-spec">${q.spec}</div></div>
+        <button class="btn btn-primary btn-sm" onclick="callNext('${q.room}')">▶ Gọi tiếp</button>
+      </div>
+      <div class="queue-current">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Đang khám</div>
+        <div class="queue-number">${q.current}</div>
+        <div class="queue-name-display">${q.currentName}</div>
+      </div>
+      <div class="queue-list">
+        ${q.waiting.slice(0,3).map(w=>`<div class="queue-item"><span class="queue-num">${w.n}</span><span class="queue-patient">${w.name}</span><span class="queue-time">⏳ ${w.t}</span></div>`).join('')}
+        ${q.waiting.length>3?`<div style="text-align:center;font-size:11px;color:var(--text3);padding:8px">+${q.waiting.length-3} bệnh nhân nữa</div>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function renderInventory(list) {
+  list = list||inventory;
+  document.getElementById('invGrid').innerHTML = list.map(i=>{
+    const pct = Math.round(i.qty/i.max*100);
+    const cls = pct>50?'ok':pct>20?'warn':'low';
+    return `<div class="inv-card">
+      <div class="inv-name">${i.name}</div>
+      <div class="inv-cat">${i.cat}</div>
+      <div class="inv-bar-label"><span>Tồn kho: ${i.qty.toLocaleString()}</span><span>${pct}%</span></div>
+      <div class="inv-bar"><div class="inv-bar-fill ${cls}" style="width:${pct}%"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:12px;align-items:center">
+        <div><div class="inv-price">${i.price}/đơn vị</div><div class="inv-exp">HSD: ${i.exp}</div></div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm">✏️</button>
+          <button class="btn btn-success btn-sm" onclick="showToast('Đã nhập thêm hàng!')">+ Nhập</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderRx() {
+  const sm = {'Đã cấp phát':'badge-green','Chờ duyệt':'badge-yellow','Đang pha chế':'badge-blue'};
+  document.getElementById('rxTbody').innerHTML = rxData.map(r=>`
+    <tr>
+      <td><span class="badge badge-gray" style="font-family:'DM Mono',monospace">${r.id}</span></td>
+      <td>${r.patient}</td>
+      <td style="color:var(--text2)">${r.doctor}</td>
+      <td>${r.date}</td>
+      <td style="font-family:'DM Mono',monospace;font-weight:700;color:var(--primary)">${r.total}</td>
+      <td><span class="badge ${sm[r.status]||'badge-gray'}">${r.status}</span></td>
+      <td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" onclick="exportPDF()">🖨️</button><button class="btn btn-outline btn-sm">👁 Xem</button></div></td>
+    </tr>`).join('');
+}
+
+// ── FILTER ──
+function filterTable(inp, tblId) {
+  const q = inp.value.toLowerCase();
+  document.querySelectorAll(`#${tblId} tbody tr`).forEach(tr=>{
+    tr.style.display = tr.textContent.toLowerCase().includes(q)?'':'none';
+  });
+}
+function filterTableByCol(sel, tblId, col) {
+  const q = sel.value.toLowerCase();
+  document.querySelectorAll(`#${tblId} tbody tr`).forEach(tr=>{
+    const td = tr.cells[col];
+    tr.style.display = (!q||td&&td.textContent.toLowerCase().includes(q))?'':'none';
+  });
+}
+function filterDocBySpec(v) { renderDoctors(v?doctors.filter(d=>d.spec===v):doctors); }
+function filterInv(v) { renderInventory(v?inventory.filter(i=>i.name.toLowerCase().includes(v.toLowerCase())):inventory); }
+function filterInvCat(v) { renderInventory(v?inventory.filter(i=>i.cat===v):inventory); }
+
+// ── ACTIONS ──
+function viewPatient(id) {
+  const p = patients.find(x=>x.id===id);
+  document.getElementById('modalTitle').textContent = '🧑‍⚕️ Hồ sơ Bệnh nhân — '+p.name;
+  document.getElementById('modalBody').innerHTML = `
+    <div class="patient-hero" style="margin-bottom:20px">
+      <div class="patient-avatar-big">🧑</div>
+      <div class="patient-hero-info">
+        <h2>${p.name}</h2>
+        <p>${p.id} • Ngày sinh: ${p.dob}</p>
+        <p style="margin-top:6px"><span class="badge badge-blue">${p.spec}</span></p>
+      </div>
+      <div class="patient-hero-stats">
+        <div class="phero-stat"><div class="val">12</div><div class="lbl">Lần khám</div></div>
+        <div class="phero-stat"><div class="val">3</div><div class="lbl">Đơn thuốc</div></div>
+        <div class="phero-stat"><div class="val">4.8</div><div class="lbl">Đánh giá</div></div>
+      </div>
+    </div>
+    <div class="chart-title" style="margin-bottom:12px">📋 Lịch sử khám bệnh</div>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-date">16/05/2026</div><div class="tl-content"><div class="tl-title">Khám ${p.spec} — ${p.doctor}</div><div class="tl-body">Chẩn đoán: Tăng huyết áp độ 1. Kê đơn: Amlodipine 5mg, Metformin 500mg.</div></div></div>
+      <div class="tl-item"><div class="tl-date">02/04/2026</div><div class="tl-content"><div class="tl-title">Tái khám — ${p.doctor}</div><div class="tl-body">Huyết áp ổn định. Duy trì phác đồ điều trị cũ.</div></div></div>
+      <div class="tl-item"><div class="tl-date">15/02/2026</div><div class="tl-content"><div class="tl-title">Khám lần đầu — ${p.doctor}</div><div class="tl-body">Nhập viện với triệu chứng đau ngực, khó thở. Chụp X-quang, xét nghiệm máu.</div></div></div>
+    </div>`;
+  openModal();
+}
+function delPatient(id) {
+  if(confirm('Xóa bệnh nhân '+id+'?')) {
+    const i = patients.findIndex(p=>p.id===id);
+    if(i>-1) { patients.splice(i,1); renderPatients(); showToast('Đã xóa bệnh nhân '+id); }
+  }
+}
+function callNext(room) {
+  const q = queueData.find(x=>x.room===room);
+  if(q&&q.waiting.length>0) {
+    const next = q.waiting.shift();
+    q.current = next.n; q.currentName = next.name;
+    renderQueue();
+    showToast(`📢 ${room}: Gọi STT ${next.n} — ${next.name}`);
+  } else showToast('Không còn bệnh nhân chờ!');
+}
+function addMedToRx() {
+  const meds = ['Augmentin 625mg','Omeprazole 20mg','Metformin 500mg','Amlodipine 5mg','Atorvastatin 20mg'];
+  const m = meds[Math.floor(Math.random()*meds.length)];
+  const q = Math.floor(Math.random()*20)+5;
+  const item = document.createElement('div');
+  item.className='rx-med-item';
+  item.innerHTML=`<span class="rx-med-name">${m}</span><span class="rx-med-qty">x ${q} viên</span><button class="btn btn-danger btn-sm" onclick="this.parentElement.remove();calcRx()">✕</button>`;
+  document.getElementById('rxMeds').appendChild(item);
+  calcRx();
+}
+function calcRx() {
+  const count = document.querySelectorAll('.rx-med-item').length;
+  const total = count * Math.floor(Math.random()*50+30) * 1000;
+  document.getElementById('rxTotal').textContent = total.toLocaleString('vi-VN')+'đ';
+}
+function saveRx() { showToast('✅ Đơn thuốc đã được lưu & gửi in!'); closeModal(); }
+function exportPDF() { showToast('📥 Đang xuất file... Vui lòng chờ!'); }
+
+// ── MODALS ──
+function openModal(type) {
+  const o = document.getElementById('modalOverlay');
+  if(type==='addPatient') {
+    document.getElementById('modalTitle').textContent='➕ Thêm Bệnh Nhân Mới';
+    document.getElementById('modalBody').innerHTML=`
+      <div class="form-row">
+        <div class="form-field"><label>Họ & Tên</label><input placeholder="Nguyễn Văn A"></div>
+        <div class="form-field"><label>CCCD/Passport</label><input placeholder="079..."></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Ngày sinh</label><input type="date"></div>
+        <div class="form-field"><label>Giới tính</label><select><option>Nam</option><option>Nữ</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Số điện thoại</label><input placeholder="0912..."></div>
+        <div class="form-field"><label>Chuyên khoa</label><select><option>Tim Mạch</option><option>Nội Khoa</option><option>Ngoại Khoa</option><option>Mắt</option><option>Nha Khoa</option></select></div>
+      </div>
+      <div class="form-field"><label>Địa chỉ</label><input placeholder="Số nhà, đường, phường/xã..."></div>
+      <div class="form-field"><label>Lý do đến khám</label><textarea placeholder="Mô tả triệu chứng..."></textarea></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+        <button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+        <button class="btn btn-primary" onclick="savePatient()">💾 Lưu hồ sơ</button>
+      </div>`;
+  } else if(type==='addDoctor') {
+    document.getElementById('modalTitle').textContent='➕ Thêm Bác Sĩ';
+    document.getElementById('modalBody').innerHTML=`
+      <div class="form-row">
+        <div class="form-field"><label>Họ & Tên</label><input placeholder="BS. Nguyễn Văn A"></div>
+        <div class="form-field"><label>Học hàm</label><select><option>BSCKI</option><option>BSCKII</option><option>ThS.BS</option><option>TS.BS</option><option>PGS.TS.BS</option><option>GS.TS.BS</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Chuyên khoa</label><select><option>Tim Mạch</option><option>Nội Khoa</option><option>Ngoại Khoa</option><option>Mắt</option></select></div>
+        <div class="form-field"><label>Ca làm việc</label><select><option>Ca sáng</option><option>Ca chiều</option><option>Ca trực đêm</option></select></div>
+      </div>
+      <div class="form-field"><label>Email</label><input placeholder="bsnguyenvana@benhvien.vn"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+        <button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+        <button class="btn btn-primary" onclick="showToast('✅ Đã thêm bác sĩ!');closeModal()">💾 Lưu</button>
+      </div>`;
+  } else if(type==='addQueue') {
+    document.getElementById('modalTitle').textContent='🔢 Tiếp Nhận Bệnh Nhân';
+    document.getElementById('modalBody').innerHTML=`
+      <div class="form-field"><label>Bệnh nhân</label><select>${patients.map(p=>`<option value="${p.id}">${p.name} — ${p.id}</option>`).join('')}</select></div>
+      <div class="form-field"><label>Chuyên khoa / Phòng khám</label><select><option>Tim Mạch</option><option>Nội Khoa</option><option>Ngoại Khoa</option><option>Mắt</option><option>Nha Khoa</option><option>Thần Kinh</option></select></div>
+      <div class="form-field"><label>Ưu tiên</label><select><option>Thường</option><option>Ưu tiên cao (Thai phụ/Trẻ em/Người cao tuổi)</option><option>Cấp cứu</option></select></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+        <button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+        <button class="btn btn-primary" onclick="showToast('✅ Đã xếp hàng đợi!');closeModal()">✅ Xác nhận tiếp nhận</button>
+      </div>`;
+  } else if(type==='addInv') {
+    document.getElementById('modalTitle').textContent='📦 Nhập Hàng Vào Kho';
+    document.getElementById('modalBody').innerHTML=`
+      <div class="form-field"><label>Tên thuốc / Vật tư</label><input placeholder="Amoxicillin 500mg..."></div>
+      <div class="form-row">
+        <div class="form-field"><label>Số lượng nhập</label><input type="number" placeholder="500"></div>
+        <div class="form-field"><label>Đơn vị</label><select><option>Viên</option><option>Hộp</option><option>Chai</option><option>Cái</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Hạn sử dụng</label><input type="date"></div>
+        <div class="form-field"><label>Nhà cung cấp</label><input placeholder="Công ty Dược XYZ..."></div>
+      </div>
+      <div class="form-field"><label>Đơn giá (VNĐ)</label><input type="number" placeholder="2500"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+        <button class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+        <button class="btn btn-primary" onclick="showToast('✅ Đã nhập hàng vào kho!');closeModal()">💾 Xác nhận nhập kho</button>
+      </div>`;
+  }
+  o.classList.add('open');
+}
+function closeModal(e) {
+  if(!e||e.target===document.getElementById('modalOverlay'))
+    document.getElementById('modalOverlay').classList.remove('open');
+}
+function savePatient() {
+  patients.unshift({id:'BN0'+(patients.length+1),name:'Bệnh nhân mới',dob:'01/01/2000',spec:'Nội Khoa',doctor:'BS. Lê Thị Mai',status:'Đang chờ'});
+  renderPatients(); closeModal();
+  showToast('✅ Đã thêm bệnh nhân mới!');
+}
+
+// ── CHARTS ──
+let chartInstances = {};
+function getChartColors() {
+  const dark = document.documentElement.getAttribute('data-theme')==='dark';
+  return {grid:dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.05)',text:dark?'#64748B':'#94A3B8'};
+}
+function initCharts() {
+  const cc = getChartColors();
+  const baseOpts = {responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:cc.grid},ticks:{color:cc.text,font:{family:'Plus Jakarta Sans',size:11}}},y:{grid:{color:cc.grid},ticks:{color:cc.text,font:{family:'Plus Jakarta Sans',size:11}}}}};
+
+  if(chartInstances.week) chartInstances.week.destroy();
+  chartInstances.week = new Chart(document.getElementById('chartWeek'),{
+    type:'bar',
+    data:{labels:['T2','T3','T4','T5','T6','T7','CN'],
+      datasets:[{data:[210,185,248,196,272,248,168],backgroundColor:'rgba(14,165,233,0.7)',borderRadius:8,borderSkipped:false},
+                {data:[180,160,200,175,240,220,145],backgroundColor:'rgba(6,182,212,0.3)',borderRadius:8,borderSkipped:false}]},
+    options:{...baseOpts,plugins:{legend:{display:false}}}
+  });
+
+  if(chartInstances.spec) chartInstances.spec.destroy();
+  chartInstances.spec = new Chart(document.getElementById('chartSpec'),{
+    type:'doughnut',
+    data:{labels:['Tim Mạch','Nội Khoa','Ngoại Khoa','Mắt','Nha Khoa','Thần Kinh'],
+      datasets:[{data:[28,22,18,12,10,10],backgroundColor:['#0EA5E9','#10B981','#F59E0B','#8B5CF6','#EF4444','#06B6D4'],borderWidth:0,hoverOffset:8}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:cc.text,font:{family:'Plus Jakarta Sans',size:11},padding:12}}},cutout:'65%'}
+  });
+
+  if(chartInstances.meds) chartInstances.meds.destroy();
+  chartInstances.meds = new Chart(document.getElementById('chartMeds'),{
+    type:'bar',
+    data:{labels:['Paracetamol','Amoxicillin','Vitamin C','Amlodipine','Metformin'],
+      datasets:[{data:[1240,850,760,520,480],backgroundColor:['#10B981','#0EA5E9','#F59E0B','#8B5CF6','#EF4444'],borderRadius:6,borderSkipped:false}]},
+    options:{...baseOpts,indexAxis:'y',plugins:{legend:{display:false}}}
+  });
+}
+function initReportCharts() {
+  const cc = getChartColors();
+  const baseOpts = {responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:cc.grid},ticks:{color:cc.text,font:{size:11}}},y:{grid:{color:cc.grid},ticks:{color:cc.text,font:{size:11}}}}};
+  if(chartInstances.rev) chartInstances.rev.destroy();
+  chartInstances.rev = new Chart(document.getElementById('chartRevenue'),{
+    type:'line',
+    data:{labels:['T1','T2','T3','T4','T5'],
+      datasets:[{data:[1.8,2.0,1.9,2.2,2.4],borderColor:'#0EA5E9',backgroundColor:'rgba(14,165,233,0.08)',tension:0.4,fill:true,borderWidth:2,pointBackgroundColor:'#0EA5E9',pointRadius:4}]},
+    options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>v+'Tỷ'}}}}
+  });
+  if(chartInstances.pt) chartInstances.pt.destroy();
+  chartInstances.pt = new Chart(document.getElementById('chartPatientTrend'),{
+    type:'line',
+    data:{labels:['T1','T2','T3','T4','T5'],
+      datasets:[{data:[1420,1580,1490,1720,1842],borderColor:'#10B981',backgroundColor:'rgba(16,185,129,0.08)',tension:0.4,fill:true,borderWidth:2,pointBackgroundColor:'#10B981',pointRadius:4}]},
+    options:baseOpts
+  });
+}
+function updateChartColors() { setTimeout(initCharts,100); }
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0F172A;color:#fff;padding:14px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.1);transition:all 0.3s;transform:translateY(10px);opacity:0';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.transform='translateY(0)';t.style.opacity='1';},10);
+  setTimeout(()=>{t.style.opacity='0';t.style.transform='translateY(10px)';setTimeout(()=>t.remove(),300);},3000);
+}
+
+// ── INIT ──
+function initAll() {
+  renderPatients();
+  renderDoctors();
+  renderQueue();
+  renderInventory();
+  renderRx();
+  setTimeout(initCharts, 100);
+  // realtime queue update simulation
+  setInterval(()=>{
+    const q = queueData[Math.floor(Math.random()*queueData.length)];
+    const nums = ['058','059','060','061','062'];
+    const names = ['Nguyễn Thị Ánh Hồng','Trần Văn Bảo','Lê Thị Cam','Phạm Văn Dương','Hoàng Minh Em'];
+    const times = ['5p','8p','12p','18p'];
+    q.waiting.push({n:nums[Math.floor(Math.random()*nums.length)],name:names[Math.floor(Math.random()*names.length)],t:times[Math.floor(Math.random()*times.length)]});
+    if(document.getElementById('sec-queue').classList.contains('active')) renderQueue();
+  }, 8000);
+}
+
+// date display
+const d = new Date(); const days=['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+document.getElementById('topbarSub').textContent = `${days[d.getDay()]}, ${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()} — Ca sáng đang hoạt động`;
+</script>
+</body>
+</html>

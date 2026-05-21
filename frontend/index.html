@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedCore — Hệ Thống Quản Lý Bệnh Viện</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/components.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">🏥</div>
+      <div>
+        <div class="login-logo-text">Med<span>Core</span></div>
+        <div class="login-subtitle">Hệ thống quản lý bệnh viện</div>
+      </div>
+    </div>
+    <div class="login-form">
+      <h2>Đăng nhập hệ thống</h2>
+      <p>Chọn vai trò và nhập thông tin xác thực</p>
+      <div style="margin-bottom:20px">
+        <div class="form-group">
+          <label>Số điện thoại / Email</label>
+          <input type="text" id="loginUser" value="admin@benhvien.vn" placeholder="admin@benhvien.vn">
+        </div>
+        <div class="form-group">
+          <label>Mật khẩu</label>
+          <input type="password" id="loginPass" value="123456" placeholder="••••••••">
+        </div>
+      </div>
+      <p class="role-label">Chọn vai trò</p>
+      <div class="login-roles">
+        <div class="role-card active" onclick="selectRole(this,'Admin')">
+          <div class="role-icon">👑</div>
+          <div class="role-name">Ban Giám Đốc</div>
+          <div class="role-desc">Toàn quyền hệ thống</div>
+        </div>
+        <div class="role-card" onclick="selectRole(this,'Bác sĩ')">
+          <div class="role-icon">🩺</div>
+          <div class="role-name">Bác Sĩ</div>
+          <div class="role-desc">Khám & kê đơn thuốc</div>
+        </div>
+        <div class="role-card" onclick="selectRole(this,'Điều dưỡng')">
+          <div class="role-icon">💊</div>
+          <div class="role-name">Điều Dưỡng</div>
+          <div class="role-desc">Chăm sóc bệnh nhân</div>
+        </div>
+        <div class="role-card" onclick="selectRole(this,'Tiếp đón')">
+          <div class="role-icon">🖥️</div>
+          <div class="role-name">Tiếp Đón</div>
+          <div class="role-desc">Quản lý hàng đợi</div>
+        </div>
+      </div>
+      <button class="btn-login" onclick="doLogin()">🔐 Đăng nhập vào hệ thống</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SIDEBAR ══ -->
+<div id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🏥</div>
+    <div class="logo-text">Med<span>Core</span></div>
+  </div>
+  <div class="sidebar-user">
+    <div class="user-avatar" id="sidebarAvatar">A</div>
+    <div class="user-info">
+      <div class="user-name" id="sidebarName">Admin</div>
+      <div class="user-role" id="sidebarRole">Ban Giám Đốc</div>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Tổng quan</div>
+    <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">📊</span> Dashboard</div>
+  </div>
+  <div class="sidebar-section" style="margin-top:8px">
+    <div class="sidebar-section-label">Quản lý</div>
+    <div class="nav-item" onclick="nav('patients',this)"><span class="nav-icon">🧑‍⚕️</span> Bệnh nhân <span class="nav-badge" id="badgePatients">248</span></div>
+    <div class="nav-item" onclick="nav('doctors',this)"><span class="nav-icon">👨‍⚕️</span> Bác sĩ & Nhân viên</div>
+    <div class="nav-item" onclick="nav('queue',this)"><span class="nav-icon">🔢</span> Hàng đợi khám <span class="nav-badge" id="badgeQueue">12</span></div>
+    <div class="nav-item" onclick="nav('prescriptions',this)"><span class="nav-icon">📋</span> Kê đơn thuốc</div>
+    <div class="nav-item" onclick="nav('inventory',this)"><span class="nav-icon">💊</span> Kho dược phẩm</div>
+  </div>
+  <div class="sidebar-section" style="margin-top:8px">
+    <div class="sidebar-section-label">Báo cáo</div>
+    <div class="nav-item" onclick="nav('reports',this)"><span class="nav-icon">📈</span> Thống kê & Báo cáo</div>
+    <div class="nav-item" onclick="nav('settings',this)"><span class="nav-icon">⚙️</span> Cài đặt hệ thống</div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="theme-toggle" onclick="toggleTheme()">
+      <span>🌙</span> Chế độ tối
+      <div class="toggle-switch"></div>
+    </div>
+    <div class="nav-item" onclick="logout()" style="color:#EF4444;margin-top:4px">
+      <span class="nav-icon">🚪</span> Đăng xuất
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAIN CONTENT ══ -->
+<div id="main">
+  <!-- Realtime Ticker -->
+  <div class="queue-ticker">
+    <span class="ticker-label">🔴 LIVE</span>
+    <div class="ticker-track" id="tickerTrack">
+      <span>🏥 Phòng Tim Mạch — Đang gọi: <strong>STT 042 - Nguyễn Văn An</strong></span>
+      <span>🦴 Phòng Cơ Xương Khớp — Đang gọi: <strong>STT 017 - Trần Thị Bích</strong></span>
+      <span>🧠 Phòng Thần Kinh — Đang gọi: <strong>STT 029 - Lê Minh Tuấn</strong></span>
+      <span>👁️ Phòng Mắt — Đang gọi: <strong>STT 008 - Phạm Thị Lan</strong></span>
+      <span>🦷 Phòng Nha Khoa — Đang gọi: <strong>STT 031 - Hoàng Văn Đức</strong></span>
+      <span>🏥 Phòng Tim Mạch — Đang gọi: <strong>STT 042 - Nguyễn Văn An</strong></span>
+      <span>🦴 Phòng Cơ Xương Khớp — Đang gọi: <strong>STT 017 - Trần Thị Bích</strong></span>
+      <span>🧠 Phòng Thần Kinh — Đang gọi: <strong>STT 029 - Lê Minh Tuấn</strong></span>
+      <span>👁️ Phòng Mắt — Đang gọi: <strong>STT 008 - Phạm Thị Lan</strong></span>
+      <span>🦷 Phòng Nha Khoa — Đang gọi: <strong>STT 031 - Hoàng Văn Đức</strong></span>
+    </div>
+  </div>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="topbarTitle">Dashboard Tổng Quan</div>
+      <div class="topbar-sub" id="topbarSub">Đang tải...</div>
+    </div>
+    <div class="topbar-right">
+      <div class="btn-icon notif-dot" title="Thông báo">🔔</div>
+      <div class="btn-icon" title="Tìm kiếm nhanh">🔍</div>
+      <div class="btn-icon" title="Xuất báo cáo" onclick="exportPDF()">📥</div>
+    </div>
+  </div>
+
+  <!-- Page Sections -->
+  <div class="page-content">
+    <!-- Mỗi section được load từ sections/ -->
+    <div id="sec-dashboard" class="section active" onclick="nav('dashboard',this)"></div>
+    <div id="sec-patients"  class="section" onclick="nav('patients',this)"></div>
+    <div id="sec-doctors"   class="section"></div>
+    <div id="sec-queue"     class="section"></div>
+    <div id="sec-prescriptions" class="section"></div>
+    <div id="sec-inventory" class="section"></div>
+    <div id="sec-reports"   class="section"></div>
+    <div id="sec-settings"  class="section"></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-close" onclick="closeModal()">✕</div>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="js/data.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/render.js"></script>
+<script src="js/modals.js"></script>
+<script src="js/patient.js"></script>
+<script src="js/doctor.js"></script>
+<script src="js/queue.js"></script>
+<script src="js/prescription.js"></script>
+<script src="js/inventory.js"></script>
+<script src="js/reports.js"></script>
+<script src="js/appointment.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

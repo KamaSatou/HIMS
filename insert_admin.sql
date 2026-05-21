@@ -1,0 +1,1 @@
+INSERT IGNORE INTO users (username, password, full_name, email, role, is_active, created_at, updated_at) VALUES ('admin@benhvien.vn', '$2a$10$UMovwGTUfuCtQTmbzF5eOOOnIxhlj6p97NciFRFo3pDee2Sl9mn0m', 'Administrator', 'admin@benhvien.vn', 'ADMIN', 1, NOW(), NOW());
